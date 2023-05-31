@@ -3,6 +3,7 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -21,6 +22,7 @@ export class UserService {
 
     const existingUser = await this.userModel.findOne({ email }).exec();
     if (existingUser) {
+      Logger.error('User already exists');
       throw new ConflictException('User already exists');
     }
 
@@ -33,6 +35,7 @@ export class UserService {
       });
       return user.save();
     } catch (error) {
+      Logger.error('Something went wrong');
       throw new HttpException(
         'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -44,6 +47,7 @@ export class UserService {
     try {
       return this.userModel.findOne({ email }).exec();
     } catch (error) {
+      Logger.error('User Not Found with email : ' + email);
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -51,10 +55,12 @@ export class UserService {
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.findUserByEmail(email);
     if (!user) {
+      Logger.error('User Not Found with email : ' + email);
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      Logger.error('Invalid password for user with email : ' + email);
       throw new HttpException(
         'Invalid password',
         HttpStatus.UNAUTHORIZED,
