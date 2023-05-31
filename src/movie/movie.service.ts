@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserRole } from '../user/user.model';
 import { Movie } from './movie.model';
 import { CreateMovieDto, UpdateMovieDto } from './movie.dto';
@@ -19,7 +19,7 @@ export class MovieService {
 
   async findByUser(userId: string): Promise<Movie[]> {
     try {
-      return this.movieModel.find({ createdBy: userId }).populate('createdBy', 'email');
+      return this.movieModel.find({ createdBy: new Types.ObjectId(userId) }).populate('createdBy', 'email');
     } catch (error) {
       throw new HttpException('something went wrong', HttpStatus.INTERNAL_SERVER_ERROR);
     }

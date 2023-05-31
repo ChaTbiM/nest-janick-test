@@ -6,8 +6,14 @@ import { Category, Movie } from './movie.model';
 import { Model } from 'mongoose';
 import { InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateMovieDto, UpdateMovieDto } from './movie.dto';
+import * as crypto from 'crypto';
+
+function generateRandomBytes(length) {
+    return crypto.randomBytes(length).toString('hex');
+}
 
 const listOfMoviesMock = ["movie1", "movie2", "movie3"]
+
 
 describe('MovieService', () => {
     let service: MovieService;
@@ -122,7 +128,7 @@ describe('MovieService', () => {
 
     describe("get user movies", () => {
         it('should return an array of movies created by user', async () => {
-            const userId = 'does-not-matter-user-id';
+            const userId = generateRandomBytes(12)
             expect(await service.findByUser(userId)).toStrictEqual(listOfMoviesMock);
         });
         it('should throw internal server error', async () => {
