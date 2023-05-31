@@ -4,7 +4,7 @@
 `npm install` or `yarn`
 
 ## seed database
-1 - make sure to create .env file that has `MONGODB_URI=` variable with your database uri and `SECRET_KEY=` variable for JWT
+1 - make sure to create .env file that has `MONGODB_URI=` variable with your database uri 
 2 - run this command `npx migrate-mongo up`
 
 ## Run application and test with Postman ( or any way you like )

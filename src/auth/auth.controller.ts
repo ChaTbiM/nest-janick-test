@@ -14,11 +14,12 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './../user/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UserRole } from 'src/user/user.model';
 
 @Controller('auth')
 @UsePipes(new ValidationPipe())
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: CreateUserDto })
