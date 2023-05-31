@@ -40,7 +40,7 @@ export class MovieService {
       throw new NotFoundException('Movie not found');
     }
     if (!this.isAuthorizedToUpdateOrDelete(user, movie)) {
-      throw new UnauthorizedException('You are not authorized to update this movie');
+      throw new HttpException('You are not authorized to update or delete this movie', HttpStatus.FORBIDDEN);
     }
     Object.assign(movie, data);
     try {
@@ -56,7 +56,7 @@ export class MovieService {
       throw new NotFoundException('Movie not found');
     }
     if (!this.isAuthorizedToUpdateOrDelete(user, movie)) {
-      throw new UnauthorizedException('You are not authorized to delete this movie');
+      throw new HttpException('You are not authorized to update or delete this movie', HttpStatus.FORBIDDEN);
     }
     try {
       return this.movieModel.findByIdAndDelete(id);

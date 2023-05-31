@@ -4,7 +4,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { User, UserRole } from '../user/user.model';
 import { Category, Movie } from './movie.model';
 import { Model } from 'mongoose';
-import { InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateMovieDto, UpdateMovieDto } from './movie.dto';
 import * as crypto from 'crypto';
 
@@ -155,9 +155,9 @@ describe('MovieService', () => {
             await expect(serviceWithException.update('whatever', updatedMovieDto, user as User)).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw UnauthorizedException', async () => {
+        it('should throw FORBIDDEN', async () => {
             MovieModelMockWithException.findById = jest.fn().mockResolvedValue({ ...createMovieDto, createdBy: "whoever2" })
-            await expect(serviceWithException.update('movie1', updatedMovieDto, { ...user, _id: "whoever" } as User)).rejects.toThrow(UnauthorizedException);
+            await expect(serviceWithException.update('movie1', updatedMovieDto, { ...user, _id: "whoever" } as User)).rejects.toThrow(new HttpException('You are not authorized to update or delete this movie', HttpStatus.FORBIDDEN));
         });
 
     })
@@ -172,9 +172,9 @@ describe('MovieService', () => {
             await expect(serviceWithException.update('whateversadas', updatedMovieDto, user as User)).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw UnauthorizedException', async () => {
+        it('should throw FORBIDDEN', async () => {
             MovieModelMockWithException.findById = jest.fn().mockResolvedValue({ ...createMovieDto, createdBy: "whoever2" })
-            await expect(serviceWithException.update('movie1', updatedMovieDto, { ...user, _id: "whoeverdd" } as User)).rejects.toThrow(UnauthorizedException);
+            await expect(serviceWithException.update('movie1', updatedMovieDto, { ...user, _id: "whoeverdd" } as User)).rejects.toThrow(new HttpException("You are not authorized to update or delete this movie", HttpStatus.FORBIDDEN));
         });
     })
 });
