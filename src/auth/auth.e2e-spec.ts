@@ -4,6 +4,7 @@ import { AppModule } from '../../src/app.module';
 import { INestApplication, HttpStatus } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
+import { response } from 'express';
 
 describe('AuthController (e2e)', () => {
     let app: INestApplication;
@@ -30,10 +31,12 @@ describe('AuthController (e2e)', () => {
     });
 
     it('can register using an e-mail and a compliant password', async () => {
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/register')
             .send({ email: 'test@test.com', password: 'TestPassword123' })
-            .expect(HttpStatus.CREATED);
+
+        expect(response.status).toBe(HttpStatus.CREATED)
+        expect(response.body).toEqual({});
     });
 
     it("can't register using the same e-mail as someone else", async () => {
@@ -41,17 +44,30 @@ describe('AuthController (e2e)', () => {
             .post('/auth/register')
             .send({ email: 'test@test.com', password: 'TestPassword123' });
 
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/register')
             .send({ email: 'test@test.com', password: 'TestPassword123' })
-            .expect(HttpStatus.CONFLICT);
+
+        expect(response.status).toBe(HttpStatus.CONFLICT);
+        expect(response.body).toHaveProperty("message", "User already exists")
     });
 
+    it("can't register using an e-mail that doesn't match the validator", async () => {
+        const response = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'test', password: 'TestPassword123' })
+
+        expect(response.status).toBe(HttpStatus.BAD_REQUEST)
+        expect(response.body).toHaveProperty("message", ["Invalid email"]);
+    })
+
     it("can't register using an e-mail and password that doesn't match the validator", async () => {
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/register')
             .send({ email: 'test@gmail.com', password: 'p1' })
-            .expect(HttpStatus.BAD_REQUEST);
+
+        expect(response.status).toBe(HttpStatus.BAD_REQUEST)
+        expect(response.body).toHaveProperty("message", ["Password must be at least 8 characters long"]);
     });
 
     it('can login using the right e-mail and right password', async () => {
@@ -59,24 +75,30 @@ describe('AuthController (e2e)', () => {
             .post('/auth/register')
             .send({ email: 'login@test.com', password: 'LoginPassword123' });
 
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'login@test.com', password: 'LoginPassword123' })
-            .expect(HttpStatus.OK);
+
+        expect(response.status).toBe(HttpStatus.OK)
+        expect(response.body).toHaveProperty("token")
     });
 
     it("can't login using the right e-mail and wrong password", async () => {
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'login@test.com', password: 'WrongPassword' })
-            .expect(HttpStatus.UNAUTHORIZED);
+
+        expect(response.status).toBe(HttpStatus.UNAUTHORIZED)
+        expect(response.body).toHaveProperty("message", "Invalid password")
     });
 
     it("can't login using the wrong e-mail and right password", async () => {
-        return request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'wrong@test.com', password: 'LoginPassword123' })
-            .expect(HttpStatus.NOT_FOUND);
+            .send({ email: 'wrong@test.com', password: 'LoginPassword1999' })
+
+        expect(response.status).toBe(HttpStatus.NOT_FOUND)
+        expect(response.body).toHaveProperty("message", "User not found")
     });
 
 });
